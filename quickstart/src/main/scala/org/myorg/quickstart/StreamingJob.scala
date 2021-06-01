@@ -23,6 +23,22 @@ import org.apache.flink.streaming.api.scala._
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer
 
 import java.util.Properties
+import scala.util.parsing.json.JSON
+
+
+case class click(  uid:String ,  timestamp:String, ip:String)
+case class CompteurMot(uid: String,ip:String ,compteur: Int,timestamp:String)
+
+
+
+
+
+
+
+
+
+
+
 
 /**
  * Skeleton for a Flink Streaming Job.
@@ -36,8 +52,43 @@ import java.util.Properties
  * If you change the name of the main class (with the public static void main(String[] args))
  * method, change the respective entry in the POM.xml file (simply search for 'mainClass').
  */
+
+
+
 object StreamingJob {
+
+
+  def parseClick(jsonString: String,field:String):String ={
+    // On parse
+    val jsonMap = JSON.parseFull(jsonString).getOrElse("").asInstanceOf[Map[String, Any]]
+
+    // On extrait
+    if( field == "timestamp" ){
+      val field_required = jsonMap.get(field).get.asInstanceOf[Double]
+      return field_required.toString()
+
+    }
+    else
+    {
+      val field_required = jsonMap.get(field).get.asInstanceOf[String]
+      return field_required
+
+
+    }
+
+  }
+
+
+
+
+
   def main(args: Array[String]) {
+
+
+
+
+
+
     // set up the streaming execution environment
     val env = StreamExecutionEnvironment.getExecutionEnvironment
 
@@ -64,11 +115,12 @@ object StreamingJob {
     val properties = new Properties()
     properties.setProperty("bootstrap.servers", "localhost:9092")
     properties.setProperty("group.id", "test")
-
     val stream = env.addSource(new FlinkKafkaConsumer[String]("displays", new SimpleStringSchema(), properties))
-    // addSource(new FlinkKafkaConsumer[String]("displays", new SimpleStringSchema(), properties)
+    val stream2 = env.addSource(new FlinkKafkaConsumer[String]("clicks", new SimpleStringSchema(), properties))
 
-    stream.print()
+    val splituid2=stream2.map({y => click(parseClick(y,"uid"),parseClick(y,"timestamp"),parseClick(y,"ip"))}).map({y=> CompteurMot(y.uid,y.ip,1,y.timestamp) })
+    val splituid3=splituid2.keyBy(_.uid)
+    val compte = splituid3.reduce( (acc, occ)  => {CompteurMot (acc.uid,acc.ip, acc.compteur + 1,acc.timestamp) }).print()
 
     // execute program
     env.execute("Flink Streaming Scala API Skeleton")
