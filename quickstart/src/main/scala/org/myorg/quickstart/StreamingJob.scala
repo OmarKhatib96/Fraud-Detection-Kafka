@@ -21,17 +21,22 @@ package org.myorg.quickstart
 import org.apache.flink.api.common.serialization.SimpleStringSchema
 import org.apache.flink.streaming.api.scala._
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer
-
 import java.util.Properties
+
+import org.apache.flink.api.common.functions.AggregateFunction
+import org.apache.flink.streaming.api.functions.co.ProcessJoinFunction
+import org.apache.flink.streaming.api.windowing.assigners.{EventTimeSessionWindows, SlidingEventTimeWindows, TumblingEventTimeWindows}
+import org.apache.flink.streaming.api.windowing.time.Time
+import org.apache.flink.util.Collector
+
 import scala.util.parsing.json.JSON
 
 
-case class click(  uid:String ,  timestamp:String, ip:String)
-case class CompteurMot(uid: String,ip:String ,compteur: Int,timestamp:String)
-
-
-
-
+case class click(uid:String,timestamp:String,ImpressionId:String)
+case class display(uid:String,timestamp:String,ImpressionId:String)
+case  class CompteurDisplays(uid:String,impressionId:String,compteur:Int)
+//case class CompteurClicks(uid: String,ip:String ,compteur: Int,timestamp:String)
+case class CompteurClicks(uid:String,impressionId:String,compteur: Int)
 
 
 
@@ -57,7 +62,6 @@ case class CompteurMot(uid: String,ip:String ,compteur: Int,timestamp:String)
 
 object StreamingJob {
 
-
   def parseClick(jsonString: String,field:String):String ={
     // On parse
     val jsonMap = JSON.parseFull(jsonString).getOrElse("").asInstanceOf[Map[String, Any]]
@@ -73,21 +77,18 @@ object StreamingJob {
       val field_required = jsonMap.get(field).get.asInstanceOf[String]
       return field_required
 
-
     }
-
   }
 
 
 
 
 
+
+
+
+
   def main(args: Array[String]) {
-
-
-
-
-
 
     // set up the streaming execution environment
     val env = StreamExecutionEnvironment.getExecutionEnvironment
@@ -115,13 +116,36 @@ object StreamingJob {
     val properties = new Properties()
     properties.setProperty("bootstrap.servers", "localhost:9092")
     properties.setProperty("group.id", "test")
+
     val stream = env.addSource(new FlinkKafkaConsumer[String]("displays", new SimpleStringSchema(), properties))
     val stream2 = env.addSource(new FlinkKafkaConsumer[String]("clicks", new SimpleStringSchema(), properties))
 
-    val splituid2=stream2.map({y => click(parseClick(y,"uid"),parseClick(y,"timestamp"),parseClick(y,"ip"))}).map({y=> CompteurMot(y.uid,y.ip,1,y.timestamp) })
-    val splituid3=splituid2.keyBy(_.uid)
-    val compte = splituid3.reduce( (acc, occ)  => {CompteurMot (acc.uid,acc.ip, acc.compteur + 1,acc.timestamp) }).print()
+    //Pour les clics
+    val process_click=stream2.map({y =>click(parseClick(y,"uid"), parseClick(y,"timestamp"),parseClick(y,"impressionId"))}).map({y=> CompteurClicks(y.uid,y.ImpressionId,1) })
+    val process1_click=process_click.keyBy(_.uid)
+    val compte_click = process1_click.reduce( (acc, occ)  => {CompteurClicks (acc.uid,acc.impressionId, acc.compteur + 1) })
 
+    //Pour les displays
+    val process_display=stream.map({y =>display(parseClick(y,"uid"), parseClick(y,"timestamp"),parseClick(y,"impressionId"))}).map({y=> CompteurDisplays(y.uid,y.ImpressionId,1) })
+    val process1_display=process_display.keyBy(_.uid)
+    val compte_display = process1_display.reduce( (acc, occ)  => {CompteurDisplays (acc.uid,acc.impressionId, acc.compteur + 1) })
+
+      //On join pour calculer le CTR
+    val compte_display_joined=compte_display.join(compte_click).where(compte_display=>compte_display.uid).equalTo(compte_click=>compte_click.uid).window(TumblingEventTimeWindows.of(Time.minutes(5)))
+      .apply { (e1, e2) => e1.uid+","+e1.compteur/e2.compteur}.print()
+
+
+
+
+
+
+
+
+
+
+
+
+    //Displays
     // execute program
     env.execute("Flink Streaming Scala API Skeleton")
   }
