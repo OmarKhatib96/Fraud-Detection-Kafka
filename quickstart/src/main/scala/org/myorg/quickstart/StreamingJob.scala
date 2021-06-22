@@ -126,7 +126,7 @@ object StreamingJob {
 
     //[Pattern 3]: On join pour calculer le CTR
     val compte_display_joined=compte_display.join(compte_click).where(_.uid).equalTo(_.uid).window(SlidingEventTimeWindows.of(Time.seconds(60), Time.seconds(30)))
-      .apply { (e1, e2) => (e1.uid,(e2.compteur).toDouble/(e1.compteur).toDouble)}.filter(x => x._2 >THRESHOLD_CTR)
+      .apply { (e1, e2) => (e1.uid,e1.timestamp,(e2.compteur).toDouble/(e1.compteur).toDouble)}.filter(x => x._3 >THRESHOLD_CTR)
 
 
     //Logging the pattern results
