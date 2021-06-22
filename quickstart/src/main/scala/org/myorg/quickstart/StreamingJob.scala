@@ -43,7 +43,7 @@ case class ClicksByWindow(uid:String,timestamp:Long,average: Double)
 
 
 object StreamingJob {
-//Will parse the events {clicks/displays}
+  //Will parse the events {clicks/displays}
   def parseEvent(jsonString: String,field:String):String ={
     //  parse
     val jsonMap = JSON.parseFull(jsonString).getOrElse("").asInstanceOf[Map[String, Any]]
@@ -71,80 +71,74 @@ object StreamingJob {
 
   def main(args: Array[String]) {
 
-      // set up the streaming execution environment
-      val env = StreamExecutionEnvironment.getExecutionEnvironment
-      // use event time for the application
-      env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
-      env.setStreamTimeCharacteristic(TimeCharacteristic.ProcessingTime)
-      // configure watermark interval
-      env.getConfig.setAutoWatermarkInterval(1000L)
-      env.enableCheckpointing(60000) // checkpoint every minute
+    // set up the streaming execution environment
+    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    // use event time for the application
+    env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
+    // configure watermark interval
+    env.enableCheckpointing(60000) // checkpoint every minute
 
 
 
 
-      //Constants
-      val THRESHOLD_CTR=0.4
-      val COUNT_BY_WINDOW=10
-      val THRESHOLD_UID_PER_IP=1
-      val PATH1="./pattern1.txt"
-      val PATH2="./pattern2.txt"
-      val PATH3="./pattern3.txt"
+    //Constants
+    val THRESHOLD_CTR=0.4
+    val COUNT_BY_WINDOW=5
+    val THRESHOLD_UID_PER_IP=1
+    val PATH1="./pattern1.txt"
+    val PATH2="./pattern2.txt"
+    val PATH3="./pattern3.txt"
 
-      //Define properties
+    //Define properties
 
-      val properties = new Properties()
-      properties.setProperty("bootstrap.servers", "localhost:9092")
-      properties.setProperty("group.id", "test")
+    val properties = new Properties()
+    properties.setProperty("bootstrap.servers", "localhost:9092")
+    properties.setProperty("group.id", "test")
 
-      val stream = env.addSource(new FlinkKafkaConsumer[String]("displays", new SimpleStringSchema(), properties))
-      val stream2 = env.addSource(new FlinkKafkaConsumer[String]("clicks", new SimpleStringSchema(), properties))
-
-
-      //Datastreams for  clicks
-      val process_click=stream2.map({y =>click(parseEvent(y,"uid"), parseEvent(y,"timestamp"),parseEvent(y,"ip"),parseEvent(y,"impressionId"))}).map({y=> CompteurClicks(y.uid,y.timestamp,y.IpAddress,y.ImpressionId,1) })
-      val process1_click=process_click.keyBy(_.uid)
-      var compte_click = process1_click.reduce( (acc, occ)  => {CompteurClicks (acc.uid,acc.timestamp,acc.ipAddress,acc.impressionId, acc.compteur + 1) })
-      compte_click=compte_click.assignTimestampsAndWatermarks(new TimestampExtractorClicks)//defined watermark here
+    val stream = env.addSource(new FlinkKafkaConsumer[String]("displays", new SimpleStringSchema(), properties))
+    val stream2 = env.addSource(new FlinkKafkaConsumer[String]("clicks", new SimpleStringSchema(), properties))
 
 
-      //Datastreams for  displays
-      val process_display=stream.map({y =>display(parseEvent(y,"uid"), parseEvent(y,"timestamp"),parseEvent(y,"ip"),parseEvent(y,"impressionId"))}).map({y=> CompteurDisplays(y.uid,y.timestamp,y.ipAddress,y.ImpressionId,1) })
-      val process1_display=process_display.keyBy(_.uid)
-      var compte_display = process1_display.reduce( (acc, occ)  => {CompteurDisplays (acc.uid,acc.timestamp,acc.ipAddress,acc.impressionId, acc.compteur + 1) })
-      compte_display=compte_display.assignTimestampsAndWatermarks(new TimestampExtractorDisplays)//defined watermark here
+    //Datastreams for  clicks
+    val process_click=stream2.map({y =>click(parseEvent(y,"uid"), parseEvent(y,"timestamp"),parseEvent(y,"ip"),parseEvent(y,"impressionId"))}).map({y=> CompteurClicks(y.uid,y.timestamp,y.IpAddress,y.ImpressionId,1) }).assignTimestampsAndWatermarks(new TimestampExtractorClicks)//defined watermark here
+    val process1_click=process_click.keyBy(_.uid).window(TumblingEventTimeWindows.of(Time.seconds(60)))
+    var compte_click = process1_click.reduce( (acc, occ)  => {CompteurClicks (acc.uid,acc.timestamp,acc.ipAddress,acc.impressionId, acc.compteur + 1) })
+
+    //Datastreams for  displays
+    val process_display=stream.map({y =>display(parseEvent(y,"uid"), parseEvent(y,"timestamp"),parseEvent(y,"ip"),parseEvent(y,"impressionId"))}).map({y=> CompteurDisplays(y.uid,y.timestamp,y.ipAddress,y.ImpressionId,1) }).assignTimestampsAndWatermarks(new TimestampExtractorDisplays)//defined watermark here
+    val process1_display=process_display.keyBy(_.uid).window(TumblingEventTimeWindows.of(Time.seconds(60)))
+    var compte_display = process1_display.reduce( (acc, occ)  => {CompteurDisplays (acc.uid,acc.timestamp,acc.ipAddress,acc.impressionId, acc.compteur + 1) })
 
 
-      //[Pattern 1]: Nombre de cliques par uid et par adresses ip
-      val process_click_ip=compte_click.keyBy(_.ipAddress).window(SlidingEventTimeWindows.of(Time.seconds(60), Time.seconds(30)))
-        .allowedLateness(Time.seconds(5))
-      var compte_click_ip = process_click_ip.reduce( (acc, occ)  => {CompteurClicks (acc.uid,acc.timestamp,acc.ipAddress,acc.impressionId, acc.compteur + 1) })
-      var compte_click_ip_filtered=compte_click_ip.filter(x=>x.compteur>THRESHOLD_UID_PER_IP)
+    //[Pattern 1]: Nombre de cliques par uid et par adresses ip
+    val process_click_ip=compte_click.keyBy(_.ipAddress).window(SlidingEventTimeWindows.of(Time.seconds(60), Time.seconds(30)))
+    var compte_click_ip = process_click_ip.reduce( (acc, occ)  => {CompteurClicks (acc.uid,acc.timestamp,acc.ipAddress,acc.impressionId, acc.compteur + 1) })
+    var compte_click_ip_filtered=compte_click_ip.filter(x=>x.compteur>THRESHOLD_UID_PER_IP)
 
 
-      // [Pattern 2]: Count des cliques par uid sur une fenêtre donnée
-      val count_by_window = process1_click
-        .timeWindow(Time.seconds(10))
-        .apply(new ClickPerWindow).filter(_.average>=COUNT_BY_WINDOW)
+    // [Pattern 2]: Count des cliques par uid sur une fenêtre donnée
+    val count_by_window = process_click.keyBy(_.uid).timeWindow(Time.seconds(20))
+      .apply(new ClickPerWindow).filter(_.average>=COUNT_BY_WINDOW)
+
+    count_by_window.print()
 
 
 
-      //[Pattern 3]: On join pour calculer le CTR
-      val compte_display_joined=compte_display.join(compte_click).where(_.uid).equalTo(_.uid).window(SlidingEventTimeWindows.of(Time.seconds(60), Time.seconds(30))).allowedLateness(Time.seconds(5))
+    //[Pattern 3]: On join pour calculer le CTR
+    val compte_display_joined=compte_display.join(compte_click).where(_.uid).equalTo(_.uid).window(SlidingEventTimeWindows.of(Time.seconds(60), Time.seconds(30)))
       .apply { (e1, e2) => (e1.uid,(e2.compteur).toDouble/(e1.compteur).toDouble)}.filter(x => x._2 >THRESHOLD_CTR)
 
-      compte_display_joined.print()
 
-      //Logging the pattern results
-      logToFile(PATH1,compte_display_joined)
-      logToFile(PATH2,compte_click_ip_filtered)
-      logToFile(PATH3,count_by_window)
+    //Logging the pattern results
+    logToFile(PATH1,compte_display_joined)
+    logToFile(PATH2,compte_click_ip_filtered)
+    logToFile(PATH3,count_by_window)
 
 
-      val LOG = LoggerFactory.getLogger(compte_display_joined.getClass)
+    val LOG = LoggerFactory.getLogger(compte_display_joined.getClass)
 
-      //Displays
-      // execute program
-      env.execute("Flink Streaming Scala API Skeleton")
+    //Displays
+    // execute program
+    env.execute("Flink Streaming Scala API Skeleton")
   }
 }

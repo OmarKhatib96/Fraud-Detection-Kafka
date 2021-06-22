@@ -1,12 +1,12 @@
 package org.myorg.quickstart
 
-import org.apache.flink.streaming.api.functions.AssignerWithPeriodicWatermarks
+import org.apache.flink.streaming.api.functions.{AssignerWithPeriodicWatermarks, AssignerWithPunctuatedWatermarks}
 import org.apache.flink.streaming.api.watermark.Watermark
 
 import scala.math.max
 
 
-class TimestampExtractorDisplays extends AssignerWithPeriodicWatermarks [CompteurDisplays] with Serializable {
+class TimestampExtractorDisplays extends AssignerWithPunctuatedWatermarks [CompteurDisplays] with Serializable {
   var currentMaxTimestamp: Long = _
 
   override def extractTimestamp(displays:  CompteurDisplays,prevElementTimestamp:Long) = {
@@ -14,8 +14,7 @@ class TimestampExtractorDisplays extends AssignerWithPeriodicWatermarks [Compteu
     currentMaxTimestamp= max(timestamp, currentMaxTimestamp)
     timestamp
   }
-  override def getCurrentWatermark(): Watermark = {
-    new Watermark(currentMaxTimestamp)
-
+  override def checkAndGetNextWatermark(lastElement: CompteurDisplays, extractedTimestamp: Long): Watermark = {
+    new Watermark(extractedTimestamp)
   }
 }
