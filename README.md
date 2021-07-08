@@ -20,7 +20,7 @@
 [![Stargazers][stars-shield]][stars-url]
 [![Issues][issues-shield]][issues-url]
 [![MIT License][license-shield]][license-url]
-[![LinkedIn][linkedin-shield]][https://www.linkedin.com/in/omar-khatib-b0758b12b/]
+[![LinkedIn][linkedin-shield]][linkedin-url]
 
 
 
@@ -94,17 +94,14 @@ There are 3 distincts patterns we want you to find.
 ### Built With
 
 This section should list any major frameworks that you built your project using. Leave any add-ons/plugins for the acknowledgements section. Here are a few examples.
-* [Bootstrap](https://getbootstrap.com)
-* [JQuery](https://jquery.com)
-* [Laravel](https://laravel.com)
+* [Docker](https://docs.docker.com/)
+* [Maven](https://maven.apache.org/)
+* [IntelliJ](https://flink.apache.org/)
 
 
 
 <!-- GETTING STARTED -->
 ## Getting Started
-
-This is an example of how you may give instructions on setting up your project locally.
-To get a local copy up and running follow these simple example steps.
 
 ### Prerequisites
 
@@ -116,7 +113,7 @@ This is an example of how to list things you need to use the software and how to
 
 ### Installation
 
-1. Get a free API Key at [https://example.com](https://example.com)
+1. Install Docker Desktop
 2. Clone the repo
    ```sh
    git clone https://github.com/OmarKhatib96/Fraud-Detection-Kafka.git
@@ -124,14 +121,10 @@ This is an example of how to list things you need to use the software and how to
 3. Install Scala and Java environements as well as Maven
    ```sh
    sudo apt install default-jre
-   sudo apt-get install scala
-
-   
+   sudo apt-get install scala   
    ```
 4. Install IntelliJ or any equivalent IDE like Ellipse (https://www.jetbrains.com/idea/)_
  
-
-
 
 <!-- USAGE EXAMPLES -->
 ## Usage
@@ -172,8 +165,8 @@ Distributed under the MIT License. See `LICENSE` for more information.
 <!-- CONTACT -->
 ## Contact
 
-Omar KHATIB  - omar.khatib@dauphine.eu
-Yanis AMIROU - yanis.amirou@dauphine.eu
+*Omar KHATIB  - omar.khatib@dauphine.eu
+*Yanis AMIROU - yanis.amirou@dauphine.eu
 Project Link: [https://github.com/OmarKhatib96/Fraud-Detection-Kafka](https://github.com/OmarKhatib96/Fraud-Detection-Kafka)
 
 
@@ -181,19 +174,7 @@ Project Link: [https://github.com/OmarKhatib96/Fraud-Detection-Kafka](https://gi
 <!-- ACKNOWLEDGEMENTS -->
 ## Acknowledgements
 * [Flink website](https://flink.apache.org/)
-* [Img Shields](https://shields.io)
-* [Choose an Open Source License](https://choosealicense.com)
-* [GitHub Pages](https://pages.github.com)
-* [Animate.css](https://daneden.github.io/animate.css)
-* [Loaders.css](https://connoratherton.com/loaders)
-* [Slick Carousel](https://kenwheeler.github.io/slick)
-* [Smooth Scroll](https://github.com/cferdinandi/smooth-scroll)
-* [Sticky Kit](http://leafo.net/sticky-kit)
-* [JVectorMap](http://jvectormap.com)
-* [Font Awesome](https://fontawesome.com)
-
-
-
+* [IntelliJ](https://www.jetbrains.com/idea/)
 
 
 <!-- MARKDOWN LINKS & IMAGES -->
