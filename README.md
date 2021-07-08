@@ -33,21 +33,6 @@
 
   <h3 align="center">Best-README-Template</h3>
 
-  <p align="center">
-    An awesome README template to jumpstart your projects!
-    <br />
-    <a href="https://github.com/othneildrew/Best-README-Template"><strong>Explore the docs »</strong></a>
-    <br />
-    <br />
-    <a href="https://github.com/othneildrew/Best-README-Template">View Demo</a>
-    ·
-    <a href="https://github.com/othneildrew/Best-README-Template/issues">Report Bug</a>
-    ·
-    <a href="https://github.com/othneildrew/Best-README-Template/issues">Request Feature</a>
-  </p>
-</p>
-
-
 
 <!-- TABLE OF CONTENTS -->
 <details open="open">
@@ -88,7 +73,7 @@ By running this docker-compose, it will :
 Create a Kafka cluster with two topics : "clicks" and "displays"
 Launch a python script which will send events to those two topics and display them in the terminal
 This generator simulates few suspicious/fraudulent patterns that you should detect using Flink.
-There are 3 distincts patterns we want you to find.
+There are 3 distincts patterns we're trying  to find.
 
 
 ### Built With
