@@ -81,17 +81,15 @@
 ## About The Project
 
 [![Product Name Screen Shot][product-screenshot]](https://example.com)
+The goal of the project is to create a Flink application which will read from Kafka clicks and displays, detect some suspicious/fraudulent activities and output the suspicious events into a file.
+Please download and run this docker-compose file : https://github.com/Sabmit/paris-dauphine/blob/master/docker/kafka-zk/docker-compose.yml
+To run it, simply execute `docker-compose rm -f; docker-compose up` in the same directory as the docker-compose.yml file.
+By running this docker-compose, it will :
+Create a Kafka cluster with two topics : "clicks" and "displays"
+Launch a python script which will send events to those two topics and display them in the terminal
+This generator simulates few suspicious/fraudulent patterns that you should detect using Flink.
+There are 3 distincts patterns we want you to find.
 
-There are many great README templates available on GitHub, however, I didn't find one that really suit my needs so I created this enhanced one. I want to create a README template so amazing that it'll be the last one you ever need -- I think this is it.
-
-Here's why:
-* Your time should be focused on creating something amazing. A project that solves a problem and helps others
-* You shouldn't be doing the same tasks over and over like creating a README from scratch
-* You should element DRY principles to the rest of your life :smile:
-
-Of course, no one template will serve all projects since your needs may be different. So I'll be adding more in the near future. You may also suggest changes by forking this repo and creating a pull request or opening an issue. Thanks to all the people have have contributed to expanding this template!
-
-A list of commonly used resources that I find helpful are listed in the acknowledgements.
 
 ### Built With
 
@@ -113,7 +111,7 @@ To get a local copy up and running follow these simple example steps.
 This is an example of how to list things you need to use the software and how to install them.
 * npm
   ```sh
-  npm install npm@latest -g
+  docker-compose up
   ```
 
 ### Installation
@@ -121,35 +119,36 @@ This is an example of how to list things you need to use the software and how to
 1. Get a free API Key at [https://example.com](https://example.com)
 2. Clone the repo
    ```sh
-   git clone https://github.com/your_username_/Project-Name.git
+   git clone https://github.com/OmarKhatib96/Fraud-Detection-Kafka.git
    ```
-3. Install NPM packages
+3. Install Scala and Java environements as well as Maven
    ```sh
-   npm install
+   sudo apt install default-jre
+   sudo apt-get install scala
+
+   
    ```
-4. Enter your API in `config.js`
-   ```JS
-   const API_KEY = 'ENTER YOUR API';
-   ```
+4. Install IntelliJ or any equivalent IDE like Ellipse (https://www.jetbrains.com/idea/)_
+ 
 
 
 
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
 
-_For more examples, please refer to the [Documentation](https://example.com)_
-
-
-
-<!-- ROADMAP -->
-## Roadmap
-
-See the [open issues](https://github.com/othneildrew/Best-README-Template/issues) for a list of proposed features (and known issues).
-
-
-
+1. Clone the repo
+   ```sh
+   git clone https://github.com/OmarKhatib96/Fraud-Detection-Kafka.git
+   ```
+2. Go to the root folder of the compose file and run
+   ```sh
+   docker-compose up
+   ```
+4. Open the quistart folder with IntelliJ and run the project
+5. The results of the automated fraud detection are logged into 3 text files
+6. Run the notebook on Jupyter environement to get the data visualization.
+ 
 <!-- CONTRIBUTING -->
 ## Contributing
 
@@ -173,15 +172,15 @@ Distributed under the MIT License. See `LICENSE` for more information.
 <!-- CONTACT -->
 ## Contact
 
-Your Name - [@your_twitter](https://twitter.com/your_username) - email@example.com
-
-Project Link: [https://github.com/your_username/repo_name](https://github.com/your_username/repo_name)
+Omar KHATIB  - omar.khatib@dauphine.eu
+Yanis AMIROU - yanis.amirou@dauphine.eu
+Project Link: [https://github.com/OmarKhatib96/Fraud-Detection-Kafka](https://github.com/OmarKhatib96/Fraud-Detection-Kafka)
 
 
 
 <!-- ACKNOWLEDGEMENTS -->
 ## Acknowledgements
-* [GitHub Emoji Cheat Sheet](https://www.webpagefx.com/tools/emoji-cheat-sheet)
+* [Flink website](https://flink.apache.org/)
 * [Img Shields](https://shields.io)
 * [Choose an Open Source License](https://choosealicense.com)
 * [GitHub Pages](https://pages.github.com)
@@ -210,5 +209,5 @@ Project Link: [https://github.com/your_username/repo_name](https://github.com/yo
 [license-shield]: https://img.shields.io/github/license/othneildrew/Best-README-Template.svg?style=for-the-badge
 [license-url]: https://github.com/othneildrew/Best-README-Template/blob/master/LICENSE.txt
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
-[linkedin-url]: https://linkedin.com/in/othneildrew
+[linkedin-url]:https://www.linkedin.com/in/omar-khatib-b0758b12b/
 [product-screenshot]: images/screenshot.png
